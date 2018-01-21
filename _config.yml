@@ -24,7 +24,7 @@ github_username:  martinskruze
 
 # Build settings
 markdown: kramdown
-theme: jekyll-theme-time-machine
+theme: minima
 plugins:
   - jekyll-feed
 
