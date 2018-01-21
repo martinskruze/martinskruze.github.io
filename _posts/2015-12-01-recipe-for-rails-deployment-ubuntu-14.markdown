@@ -86,8 +86,8 @@ gem install unicorn
 ```bash
   bundle install
 ```
-2. create/edit file config/unicorn.rb ([unicorn.rb exapmle](../post_files/2015-12-01-recipe-for-rails-deployment-ubuntu-14-unicorn.rb))
-3. edit config/deploy.rb ([deploy.rb exapmle](../post_files/2015-12-01-recipe-for-rails-deployment-ubuntu-14-deploy.rb))
+2. create/edit file config/unicorn.rb ([unicorn.rb exapmle]({{ "/post_files/2015-12-01-recipe-for-rails-deployment-ubuntu-14/unicorn.rb" | relative_url }}))
+3. edit config/deploy.rb ([deploy.rb exapmle]({{ "/post_files/2015-12-01-recipe-for-rails-deployment-ubuntu-14/unicorn.rb" | relative_url }}))
 
 ### server side
 1 configure nginx (with example in your_apps_domain_nginx_configuration)
