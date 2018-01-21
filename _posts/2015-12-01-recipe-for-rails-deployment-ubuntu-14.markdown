@@ -12,9 +12,9 @@ This Won't Work at later Ubuntu versions and since 2018 mina setup too needs to 
 As general rule - if action is sudo - it should be done by user that can do sudo actions. You can make users that does not do sudo actions as user under which this application will run, but then just do all non-sudo actions under that user!
 
 ### some sites from which this is compiled modified
-https://coderwall.com/p/yz8cha/deploying-rails-app-using-nginx-unicorn-postgres-and-capistrano-to-digital-ocean
-https://olmonrails.wordpress.com/2008/08/12/switching-rails-to-postgresql/
-https://www.digitalocean.com/community/tutorials/how-to-deploy-a-rails-app-with-unicorn-and-nginx-on-ubuntu-14-04
+[coderwall.com article about rails deployment](https://coderwall.com/p/yz8cha/deploying-rails-app-using-nginx-unicorn-postgres-and-capistrano-to-digital-ocean)
+[olmonrails article about switching rails to postgres](https://olmonrails.wordpress.com/2008/08/12/switching-rails-to-postgresql/)
+[digitalocean article about rails deployment](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-rails-app-with-unicorn-and-nginx-on-ubuntu-14-04)
 
 
 ### dns side
