@@ -2,7 +2,7 @@
 layout: post
 title:  git cheatsheet
 date:   2018-01-21 11:18:00 +0200
-categories: cheatsheets
+categories: cheatsheets, recipes
 ---
 ## general things
 - initialize repo: `git init`
@@ -10,7 +10,7 @@ categories: cheatsheets
 - clone in new directory existing repo `git clone {remote_url}`
 - add all files: `git add .`
 - commit changes: `git commit -m "{message}"`
-- commit changes without message (conflicts): `git commit --no-edit`
+- commit changes without message (for merging edc.): `git commit --no-edit`
 - push (with setup): `git push --set-upstream origin master`
 - get from remote repo and merge: `git pull`: (`git pull origin master`, `git pull` is made up from `git fetch` and `git merge`)
 - get from remote repo: `git fetch` (the pulled "results" will be "saved" in `remotes/{remote_name}/{remote_branch_name}` e.g. `remotes/origin/master`, plus you can specify specific remote repo to fetch)

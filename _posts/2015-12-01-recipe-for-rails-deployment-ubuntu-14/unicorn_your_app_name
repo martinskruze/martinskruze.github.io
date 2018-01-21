@@ -1,0 +1,75 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          YOUR_APP_NAME_HERE
+# Required-Start:    $all
+# Required-Stop:     $network $local_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start the YOUR_APP_NAME_HERE unicorns at boot
+# Description:       Enable YOUR_APP_NAME_HERE at boot time.
+### END INIT INFO
+
+set -e
+
+USAGE="Usage: $0 <start|stop|restart|upgrade|rotate|force-stop>"
+
+# app settings
+USER="YOUR_USER_HERE"
+APP_NAME="YOUR_APP_NAME_HERE"
+APP_DOMAIN="$APP_NAME.lv"
+APP_ROOT="/home/$USER/$APP_DOMAIN/current"
+RUBY_VERSION="ruby-2.2.2"
+ENV="production"
+APP_GEMSET="$APP_NAME"
+
+# environment settings
+GEM_HOME="/home/$USER/.rvm/gems/$RUBY_VERSION@$APP_GEMSET/"
+SET_PATH="cd $APP_ROOT && rvm use $RUBY_VERSION@$APP_GEMSET && export GEM_HOME=$GEM_HOME"
+
+UNICORN_OPTS="-D -E $ENV -c $APP_ROOT/config/unicorn.rb"
+
+CMD="$SET_PATH && $GEM_HOME/bin/unicorn $UNICORN_OPTS"
+PID="$APP_ROOT/tmp/pids/unicorn.pid"
+OLD_PID="$PID.oldbin"
+
+# make sure the app exists
+cd $APP_ROOT || exit 1
+
+sig () {
+  test -s "$PID" && kill -$1 `cat $PID`
+}
+
+oldsig () {
+  test -s $OLD_PID && kill -$1 `cat $OLD_PID`
+}
+
+case $1 in
+  start)
+    sig 0 && echo >&2 "Already running" && exit 0
+    echo "Starting $APP_NAME"
+    su - $USER -c "$CMD"
+    ;;
+  stop)
+    echo "Stopping $APP_NAME"
+    sig QUIT && exit 0
+    echo >&2 "Not running"
+    ;;
+  force-stop)
+    echo "Force stopping $APP_NAME"
+    sig TERM && exit 0
+    echo >&2 "Not running"
+    ;;
+  restart|reload|upgrade)
+    sig HUP && echo "reloaded $APP_NAME" && exit 0
+    echo >&2 "Couldn't reload, starting '$CMD' instead"
+    $CMD
+    ;;
+  rotate)
+    sig USR1 && echo rotated logs OK && exit 0
+    echo >&2 "Couldn't rotate logs" && exit 1
+    ;;
+  *)
+    echo >&2 $USAGE
+    exit 1
+    ;;
+esac
