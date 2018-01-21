@@ -110,7 +110,7 @@ categories: cheatsheets
 3. add changes to staging
 4. commit changes
 
-### merging one branch into another (this case development into master)
+### merging one branch into another (this case development into master) and removing merged one
 1. you are in development branch
 2. go to master branch `git checkout master`
 3. merge it `git merge development`
