@@ -2,7 +2,7 @@
 layout: post
 title:  git cheatsheet
 date:   2018-01-21 11:18:00 +0200
-categories: cheatsheets, recipes
+categories: cheatsheets
 ---
 ## general things
 - initialize repo: `git init`

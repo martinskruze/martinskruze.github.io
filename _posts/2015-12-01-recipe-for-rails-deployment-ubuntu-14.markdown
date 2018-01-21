@@ -22,7 +22,7 @@ https://www.digitalocean.com/community/tutorials/how-to-deploy-a-rails-app-with-
 
 ### your local side
 1. In gemfile:
-```bash
+```ruby
 gem "mina"
 ```
 2. In console:
@@ -80,85 +80,128 @@ gem install unicorn
 
 ### in your app
 1. add unicorn gem to Gemfile
-```bash
-  gem 'unicorn'
+```ruby
+gem "unicorn"
 ```
 ```bash
-  bundle install
+bundle install
 ```
 2. create/edit file config/unicorn.rb ([unicorn.rb exapmle]({{ "/post_files/2015-12-01-recipe-for-rails-deployment-ubuntu-14/unicorn.rb" | relative_url }}))
-3. edit config/deploy.rb ([deploy.rb exapmle]({{ "/post_files/2015-12-01-recipe-for-rails-deployment-ubuntu-14/unicorn.rb" | relative_url }}))
+3. edit config/deploy.rb ([deploy.rb exapmle]({{ "/post_files/2015-12-01-recipe-for-rails-deployment-ubuntu-14/deploy.rb" | relative_url }}))
 
 ### server side
-1 configure nginx (with example in your_apps_domain_nginx_configuration)
-  sudo vim /etc/nginx/sites-available/[your_apps_domain]
-  sudo ln -s /etc/nginx/sites-available/[your_apps_domain] /etc/nginx/sites-enabled/[your_apps_domain]
-2 restart nginx
-  sudo service nginx restart
-3 if everything is ok so far (and you have pointed dns records to your server), you should go to your page example.com and see
-  502 Bad Gateway
-4 unicorn starting/stoping and restarting script #> in this file edit and copy/paste from example unicorn_your_app_name script
-  sudo vim /etc/init.d/unicorn_[your app name]
-5 add permisions and make it start stop as it should do
-  sudo chmod 755 /etc/init.d/unicorn_appname
-  sudo update-rc.d unicorn_appname defaults
+1. configure nginx ([site's nginx configuration exapmle]({{ "/post_files/2015-12-01-recipe-for-rails-deployment-ubuntu-14/your_apps_domain_nginx_configuration" | relative_url }}))
+```bash
+sudo vim /etc/nginx/sites-available/[your_apps_domain]
+sudo ln -s /etc/nginx/sites-available/[your_apps_domain] /etc/nginx/sites-enabled/[your_apps_domain]
+```
+2. restart nginx
+```bash
+sudo service nginx restart
+```
+3. if everything is ok so far (and you have pointed dns records to your server), you should go to your page example.com and see:
+```bash
+502 Bad Gateway
+```
+4. unicorn starting/stoping and restarting script - in this file edit and copy/paste from [unicorn's script exapmle]({{ "/post_files/2015-12-01-recipe-for-rails-deployment-ubuntu-14/unicorn_your_app_name script" | relative_url }})
+```bash
+sudo vim /etc/init.d/unicorn_[your app name]
+```
+5. add permisions and make it start stop as it should do
+```bash
+sudo chmod 755 /etc/init.d/unicorn_appname
+sudo update-rc.d unicorn_appname defaults
+```
 6 create place for sockets
-  sudo mkdir /var/sockets
-  sudo chmod 777 /var/sockets/
+```bash
+sudo mkdir /var/sockets
+sudo chmod 777 /var/sockets/
+```
 
 ### on server
-  mkdir [your app path]
-  chown -R username [your app path]
+```bash
+mkdir [your app path]
+chown -R username [your app path]
+```
 
 ### on local machine
-1 set up authorised keys (https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2)
-  ssh-copy-id [your login]@[your server IP or app domain]
+1. set up authorised keys ([info from digitalocean](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2))
+```bash
+ssh-copy-id [your login]@[your server IP or app domain]
+```
 
 ### on server
-1 if private github repo - you will need to add ssh key from your server to github (https://help.github.com/articles/generating-ssh-keys/)
+1. if private github repo - you will need to add ssh key from your server to github
+([info from github](https://help.github.com/articles/generating-ssh-keys/))
 
 ### in your app
+```bash
 mina setup
+```
 
 ### on server
-1 clarify your rvm path
-  rvm info
-2 take from printout start info - usually "/home/[your user]/.rvm/" and add "/scripts/rvm" and that will be your path
-3 install postgres
-  sudo apt-get install postgresql postgresql-client postgresql-contrib libpq-dev
-  gem install pg -- --with-pg-config#/usr/bin/pg_config
-4 create new postgres user
-  sudo -u postgres psql
-  create user [username] with password '[password]';
-  alter role [username] superuser createrole createdb replication;
-  create database [projectname]_production owner [username];
-5 exit from psql
-  \q
+1. clarify your rvm path
+```bash
+rvm info
+```
+2. take from printout start info - usually `/home/[your user]/.rvm/` and add `/scripts/rvm` and that will be your path
+3. install postgres
+```bash
+sudo apt-get install postgresql postgresql-client postgresql-contrib libpq-dev
+gem install pg -- --with-pg-config#/usr/bin/pg_config
+```
+4. create new postgres user
+```bash
+sudo -u postgres psql
+create user [username] with password '[password]';
+alter role [username] superuser createrole createdb replication;
+create database [projectname]_production owner [username];
+```
+5. exit from psql
+```bash
+\q
+```
 
 ### on server
-1 edit database file in [your app path]/shared/config/database.yml
-2 edit your .bashrc file and add line
-  source "$HOME/.rvm/scripts/rvm"
+1. edit database file in `[your app path]/shared/config/database.yml`
+2. edit your `.bashrc` file and add line
+```bash
+source "$HOME/.rvm/scripts/rvm"
+```
 3 restart server
-  sudo reboot now
+```bash
+sudo reboot now
+```
 
 ### in your app
-  mina deploy
+```bash
+mina deploy
+```
 
 ## if you need stop/start unicorn without service
 ### in project current directory on server
-  ps ax | grep unicorn
-  kill -QUIT [first process number]
-  RAILS_ENV#production bundle exec unicorn -D -c config/unicorn.rb
+```bash
+ps ax | grep unicorn
+kill -QUIT [first process number]
+RAILS_ENV#production bundle exec unicorn -D -c config/unicorn.rb
+```
 
 ### some errors
-#### Paperclip::Errors::CommandNotFoundError (Could not run the `identify` command. Please install ImageMagick.):
-  sudo apt-get install imagemagick
+#### `Paperclip::Errors::CommandNotFoundError (Could not run the 'identify' command. Please install ImageMagick.)`:
+```bash
+sudo apt-get install imagemagick
+```
 
 ### some extra stuff
 #### to dump database
-  pg_dump db_name -U username -h localhost -F c
+```bash
+pg_dump db_name -U username -h localhost -F c
+```
 #### to restore db from dump
-  pg_restore --verbose --clean --no-acl --no-owner -h myhost -U myuser -d mydb latest.dump
+```bash
+pg_restore --verbose --clean --no-acl --no-owner -h myhost -U myuser -d mydb latest.dump
+```
 #### to restore db if dumped as text file
+```bash
 psql -h localhost -d database_name -U db_username -f filename.sql
+```
