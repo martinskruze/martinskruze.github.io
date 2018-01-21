@@ -4,9 +4,6 @@ title:  Git Cheatsheet!
 date:   2018-01-21 11:18:00 +0200
 categories: cheatsheets
 ---
-
-# git cheatsheet
-
 ## general things
 - initialize repo: `git init`
 - add remote origin to existing repo: `git remote add origin {remote_url}`
@@ -17,6 +14,10 @@ categories: cheatsheets
 - push (with setup): `git push --set-upstream origin master`
 - get from remote repo and merge: `git pull`: (`git pull origin master`, `git pull` is made up from `git fetch` and `git merge`)
 - get from remote repo: `git fetch` (the pulled "results" will be "saved" in `remotes/{remote_name}/{remote_branch_name}` e.g. `remotes/origin/master`, plus you can specify specific remote repo to fetch)
+
+### selecting commits
+- current commit `HEAD` or `branch_name`, or `{specific commit's hash}`
+- two commits back `HEAD~2` or `branch_name~2`, or `{specific commit's hash}`
 
 ## looking at things / searching
 
