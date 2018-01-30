@@ -39,6 +39,7 @@ my try for Feynman's learning method: `https://medium.com/taking-note/learning-f
     - `-p` can be given: 1 port `{port-of-containers-inside}`, which will become accessible from outside from randomly allocated port (you can find this port by `docker ps` or `docker port {friendly-name or container-id} {needed-port-inside}`)
   - image 'redis' with data that stays from creation to creation and can be accessed from different locations (volume): `docker run -d -v {folder-location-outside-container}:{folder-location-inside-of} redis`
     - you can use `$PWD` as placeholder for current directory on outside e.g.: `docker run -d -v "$PWD/data":/data redis`
+  - you can add environmental variables with `-e`: `-e NODE_ENV=production`
 
 ## create images
 - you can create docker images by using Dckerfiles with command `docker build {options} {directory-with-Dockerfile}`, for example `docker build -t webserver-image:v1 .` will build image called `webserver-image` with tag `v1` in current (`.`) folder.
@@ -57,6 +58,7 @@ You have these commands (+ some others) in Docekrfile:
 - `COPY {source} {destination}` - copy files from the directory containing the Dockerfile to the container's image. This is extremely useful for source code and assets that you want to be deployed inside your container.
 - `EXPOSE {port number}` - expose any port `xxx`, ports `xxx xxy xxz` or port range `xxx-xxy`
 - `ENV {environmental variables}`
+- `WORKDIR {directory}` - all future commands are executed from the directory relative to our application (inside the container that will be created from this image)
 
 ### Dockerfile examples:
 - docker file below will create image which will be based on `nginx` with `alpine` os (Linux distro's image), then will copy everything (in this case there should be index.html in current container) from current location to `/usr/share/nginx/html` - this will make webserver from single page:
@@ -70,6 +72,17 @@ FROM nginx:1.11-alpine
 COPY index.html /usr/share/nginx/html/index.html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
+```
+- create container that will run node.js app in the same folder as Dockerfile is in (to create image: `docker build -t my-nodejs-app .`, and afterwards to create container from this image: `docker run -d --name my-running-app -p 3000:3000 my-nodejs-app`):
+```Dockerfile
+FROM node:7-alpine
+RUN mkdir -p /src/app
+WORKDIR /src/app
+COPY package.json /src/app/package.json
+RUN npm install
+COPY . /src/app
+EXPOSE 3000
+CMD [ "npm", "start" ]
 ```
 
 
