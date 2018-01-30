@@ -44,7 +44,7 @@ my try for Feynman's learning method: `https://medium.com/taking-note/learning-f
 - you can create docker images by using Dckerfiles with command `docker build {options} {directory-with-Dockerfile}`, for example `docker build -t webserver-image:v1 .` will build image called `webserver-image` with tag `v1` in current (`.`) folder.
   - if you will user the command `docker build -t webserver-image:v1 .` with Dockerfile from first example and any index.html in current folder, you will be able to run container with `docker run -d -p 80:80 webserver-image:v1` - which will lunch single page webserver with index.html file from docker image's creation.
 
-#### composing Dockerfile:
+### composing Dockerfile:
 You can add instructions in **Shell** and **Exec** forms:
 - **Shell** form: `{instruction} {command}` e.g. `RUN apt-get install python3`
 - **Exec** form: ``{instruction} {array of strings - command and all paras as separate strings}` e.g.  `RUN ["apt-get", "install", "python3"] ` (this form is prefered for `CMD` and `ENTRYPOINT`)
@@ -58,7 +58,7 @@ You have these commands (+ some others) in Docekrfile:
 - `EXPOSE {port number}` - expose any port `xxx`, ports `xxx xxy xxz` or port range `xxx-xxy`
 - `ENV {environmental variables}`
 
-#### Dockerfile examples
+### Dockerfile examples:
 - docker file below will create image which will be based on `nginx` with `alpine` os (Linux distro's image), then will copy everything (in this case there should be index.html in current container) from current location to `/usr/share/nginx/html` - this will make webserver from single page:
 ```Dockerfile
 FROM nginx:alpine
