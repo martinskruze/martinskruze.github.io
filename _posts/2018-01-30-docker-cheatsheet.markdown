@@ -22,6 +22,7 @@ my try for Feynman's learning method: `https://medium.com/taking-note/learning-f
 ## general things
 - you can execute commands on running containers with: `docker exec {friendly-name or container-id} {command}`
   - get to bash in running container: `docker exec -i -t {friendly-name or container-id} /bin/bash`
+  - look at nginx containers setup: `docker exec nginx cat /etc/nginx/conf.d/default.conf`
 - you can add option `-it` and interact with container, e.g. access it's bash `docker run -it ubuntu bash` - this will run `ubuntu` and then access it's bash shell
 - you can copy things to container with `docker cp {file_to_copy_from_outside} {friendly-name or container-id}:{folder_to_copy_to_inside_container}/` e.g. `docker cp config.conf dataContainer:/config/`
 
@@ -36,6 +37,9 @@ my try for Feynman's learning method: `https://medium.com/taking-note/learning-f
   - all available ports from outside container: `docker port {friendly-name or container-id}`
 - look at all active networks `docker network ls`
 - inspect specific network `docker network inspect {network's name}`
+- you can see details of launched by docker-compose containers with `docker-compose ps`
+- you can see logs from launched by docker-compose containers with `docker-compose logs`
+- you can see containers stats (metrics) with `docker stats {friendly-name or container-id}` or just `docker stats`
 
 
 ## create containers
@@ -67,6 +71,40 @@ my try for Feynman's learning method: `https://medium.com/taking-note/learning-f
   - you can add containers to existing network with: `docker network connect --alias {containers-alias-in-network} {network's-name} {container-that-you-want-to-add}` e.g. `docker network connect --alias db frontend-network2 redis`
   - you can disconnect container from network: `docker network disconnect {networks name} containers name` e.g. `docker network disconnect frontend-network redis`
 
+## Load Balance containers (concept)
+- The Service Discovery pattern is where the application uses a third party system to identify the location of the target service. For example, if our application wanted to talk to a database, it would first ask an API what the IP address of the database is. This pattern allows you to quickly reconfigure and scale your architectures with improved fault tolerance than fixed locations.
+Example:
+  - create 'proxy container' and add docker sock to it - this will listen to port 80 requests and later delegate the job to some other containers: `docker run -d -p 80:80 -e DEFAULT_HOST=proxy.example -v /var/run/docker.sock:/tmp/docker.sock:ro --name nginx jwilder/nginx-proxy` (note: docker sock is with `:ro` flag or read-only)
+  - create one container in the proxy which can receive tasks from proxy: `docker run -d -p 80 -e VIRTUAL_HOST=proxy.example katacoda/docker-http-server` (you can lounch multiple servers and the load will be balanced automatically)
+
+## orchestrate container creation - Docker Compose
+- this happens in `docker-compose.yml` file with default format:
+```yml
+container_name:
+  property: value
+    - or options
+```
+- you can launch containers with `up` command e.g. `docker-compose up -d` `-d` will detach the containers (similar as run)
+- you can scale up or down amount of servers with `scale`, e.g. scale containers from image web to total number of 3: `docker-compose scale web=3`
+- you can stop all docker-compose containers with `docker-compose stop`
+- you can remove all docker-compose containers with `docker-compose stop`
+
+#### docker-compose example
+```yml
+web:
+  build: .
+  links:
+    - redis
+  ports:
+    - "3000"
+    - "3001"
+    - "8000"
+
+redis:
+  image: redis:alpine
+  volumes:
+    - /var/redis/data:/data
+```
 
 ## create images
 - you can create docker images by using Dckerfiles with command `docker build {options} {directory-with-Dockerfile}`, for example `docker build -t webserver-image:v1 .` will build image called `webserver-image` with tag `v1` in current (`.`) folder.
@@ -123,13 +161,29 @@ EXPOSE 3000
 CMD [ "npm", "start" ]
 ```
 
+### composing Dockerfile.multi
+- you can build multifile same as ordinary dockerfile, just add `-f` option for file e.g. `docker build -f Dockerfile.multi -t golang-app .`
 
+#### Dockerfile.multi example:
+```Dockerfile
+# First Stage
+FROM golang:1.6-alpine
+
+RUN mkdir /app
+ADD . /app/
+WORKDIR /app
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+
+# Second Stage
+FROM alpine
+EXPOSE 80
+CMD ["/app"]
+
+# Copy from first stage
+COPY --from=0 /app/main /app
+
+```
 
 ## references:
 - [interactive courses](https://katacoda.com/courses)
 - [Docker RUN vs CMD vs ENTRYPOINT](http://goinbigdata.com/docker-run-vs-cmd-vs-entrypoint/)
-
-
-
-# for later tests:
-- ? can you lounch simple web server from volume html page?
