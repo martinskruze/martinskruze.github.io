@@ -12,21 +12,31 @@ my try for Feynman's learning method: `https://medium.com/taking-note/learning-f
 - `image` is like a template that you can copy, extend or build your own (images are created from Dockerfiles), it can contain other images and a lot of extra stuff
 - `containers` are identified by `container's friendly-name` or `container's-id` (found with `docker ps` command)
   - `container's-id` looks as short or long hash string (both works to identify container)
-- `container` is stateless (it has no persistent data by default), but data can be saved from creation to creation or accessed from multiple containers or changed using volumes (-v option when creating container)
+- `container` is stateless (it has no persistent data by default), but data can be saved from creation to creation or accessed from multiple containers or changed using volumes (-v option when creating container) or you can make special Data container to also be persistent.
+
+## naming guidelines
+- all tools should prefix their keys with the reverse DNS notation of a domain controlled by the author. For example, `com.katacoda.some-label`
+- if you're creating labels for CLI use, then they should follow the DNS notation making it easier for users to type
+- keys should only consist of lower-cased alphanumeric characters, dots and dashes (for example,`[a-z0-9-.]`)
 
 ## general things
 - you can execute commands on running containers with: `docker exec {friendly-name or container-id} {command}`
   - get to bash in running container: `docker exec -i -t {friendly-name or container-id} /bin/bash`
 - you can add option `-it` and interact with container, e.g. access it's bash `docker run -it ubuntu bash` - this will run `ubuntu` and then access it's bash shell
+- you can copy things to container with `docker cp {file_to_copy_from_outside} {friendly-name or container-id}:{folder_to_copy_to_inside_container}/` e.g. `docker cp config.conf dataContainer:/config/`
 
 ## look at things
 - search image libraries: `docker search {name}` from `hub.docker.com`
 - look at containers running in background: `docker ps`
+- look at all containers - running and not running `docker ps -a`
 - look at container's details: `docker inspect {friendly-name or container-id}`
-- look at container's log files `docker inspect {friendly-name or container-id}`
+- look at some containers logs: `docker logs {friendly-name or container-id}`
 - look at container's accessible ports from outside:
   - specific port: `docker port {friendly-name or container-id} {needed-port-inside}`
   - all available ports from outside container: `docker port {friendly-name or container-id}`
+- look at all active networks `docker network ls`
+- inspect specific network `docker network inspect {network's name}`
+
 
 ## create containers
 - create container and run it from image: `docker run {options} {image-name}`
@@ -40,10 +50,38 @@ my try for Feynman's learning method: `https://medium.com/taking-note/learning-f
   - image 'redis' with data that stays from creation to creation and can be accessed from different locations (volume): `docker run -d -v {folder-location-outside-container}:{folder-location-inside-of} redis`
     - you can use `$PWD` as placeholder for current directory on outside e.g.: `docker run -d -v "$PWD/data":/data redis`
   - you can add environmental variables with `-e`: `-e NODE_ENV=production`
+- you can set up automatic restart policies for containers with additional option `--restart=on-failure:3` which will restart 3 times on failure before stopping or `--restart=always` if you want for container to allways try to restart if failed
+- you can add labels for container in options:
+  - single label with `-l` option e.g. `docker run -l user=12345 -d redis`
+  - labels from label file with `--labelfile` option, e.g. `docker run --label-file=labels -d redis` (each new label in new line of text file)
+  - you can see the labels of container with filtering json response from `inspect` e.g. `docker inspect -f "{{json .Config.Labels }}" redis`
+  - you can filter containers with `--filter` using labels e.g. `docker ps --filter "label=user=scrapbook"`
+
+## link containers or network them
+- you can simply link containers (used for simple database setups):
+  - initially create container you want to link to `docker run -d --name {friendly name} {base image name}` e.g. `docker run -d --name redis-server redis`
+  - afterwards `docker run --link {{name or id}:{alias} or {name or id}} alpine` e.g. `docker run --link redis-server:redis alpine`
+- you can link multiple containers also with `Docker Networks` which is usually the preferred way to do it - it is more elastic of creation/destruction of containers:
+  - create network with `docker network create {network-name}` e.g. `docker network create backend-network`
+  - run some container and add it to network: `docker run -d --name={new container name} --net={network-name} {base image}` e.g. `docker run -d --name=redis --net=backend-network redis` and container's name in network will be `redis.backend-network`
+  - you can add containers to existing network with: `docker network connect --alias {containers-alias-in-network} {network's-name} {container-that-you-want-to-add}` e.g. `docker network connect --alias db frontend-network2 redis`
+  - you can disconnect container from network: `docker network disconnect {networks name} containers name` e.g. `docker network disconnect frontend-network redis`
+
 
 ## create images
 - you can create docker images by using Dckerfiles with command `docker build {options} {directory-with-Dockerfile}`, for example `docker build -t webserver-image:v1 .` will build image called `webserver-image` with tag `v1` in current (`.`) folder.
   - if you will user the command `docker build -t webserver-image:v1 .` with Dockerfile from first example and any index.html in current folder, you will be able to run container with `docker run -d -p 80:80 webserver-image:v1` - which will lunch single page webserver with index.html file from docker image's creation.
+- to ensure persistence (data or databse) you can run thing called `Data Container` (also uses volumes):
+  - you can create DataContainer images with `docker create -v {folder_for_persistance} --name {friendly name} {container_image - with data}` e.g. `docker create -v /config --name dataContainer busybox`
+  - you can run contaners using this images volumes: `docker run --volumes-from {data-containers-base-name} {images-to-use-data-name}` e.g. `docker run --volumes-from dataContainer ubuntu`
+  - you can backup all data from data container `docker export {data containers name} > {filename}.tar` e.g. `docker export dataContainer > dataContainer.tar`
+  - you can import from file `docker import {filename}.tar` e.g. `docker import dataContainer.tar`
+- you can add files to ignore when building image with `.dockerignore` - text file that you add names of files that need to be ignored (for example - all git directories)
+- you can add labels for images in options:
+  - single label with `-l` option
+  - labels from label file with `--labelfile` option
+  - you can see the labels from image with filtering json response e.g. `docker inspect -f "{{json .ContainerConfig.Labels }}" redis`
+  - you can filter docker images with `--filter` e.g. `docker images --filter "label=vendor=Katacoda"`
 
 ### composing Dockerfile:
 You can add instructions in **Shell** and **Exec** forms:
@@ -84,6 +122,7 @@ COPY . /src/app
 EXPOSE 3000
 CMD [ "npm", "start" ]
 ```
+
 
 
 ## references:
