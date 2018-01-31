@@ -54,13 +54,13 @@ my try for Feynman's learning method: `https://medium.com/taking-note/learning-f
 - you can add labels for container in options:
   - single label with `-l` option e.g. `docker run -l user=12345 -d redis`
   - labels from label file with `--labelfile` option, e.g. `docker run --label-file=labels -d redis` (each new label in new line of text file)
-  - you can see the labels of container with filtering json response from `inspect` e.g. `docker inspect -f "{{json .Config.Labels }}" redis`
+  - you can see the labels of container with filtering json response from `inspect` e.g. `docker inspect -f "{\{json .Config.Labels }\}" redis`
   - you can filter containers with `--filter` using labels e.g. `docker ps --filter "label=user=scrapbook"`
 
 ## link containers or network them
 - you can simply link containers (used for simple database setups):
   - initially create container you want to link to `docker run -d --name {friendly name} {base image name}` e.g. `docker run -d --name redis-server redis`
-  - afterwards `docker run --link {{name or id}:{alias} or {name or id}} alpine` e.g. `docker run --link redis-server:redis alpine`
+  - afterwards `docker run --link {\{name or id}:{alias} or {name or id}\} alpine` e.g. `docker run --link redis-server:redis alpine`
 - you can link multiple containers also with `Docker Networks` which is usually the preferred way to do it - it is more elastic of creation/destruction of containers:
   - create network with `docker network create {network-name}` e.g. `docker network create backend-network`
   - run some container and add it to network: `docker run -d --name={new container name} --net={network-name} {base image}` e.g. `docker run -d --name=redis --net=backend-network redis` and container's name in network will be `redis.backend-network`
@@ -80,7 +80,7 @@ my try for Feynman's learning method: `https://medium.com/taking-note/learning-f
 - you can add labels for images in options:
   - single label with `-l` option
   - labels from label file with `--labelfile` option
-  - you can see the labels from image with filtering json response e.g. `docker inspect -f "{{json .ContainerConfig.Labels }}" redis`
+  - you can see the labels from image with filtering json response e.g. `docker inspect -f "{\{json .ContainerConfig.Labels }\}" redis`
   - you can filter docker images with `--filter` e.g. `docker images --filter "label=vendor=Katacoda"`
 
 ### composing Dockerfile:
