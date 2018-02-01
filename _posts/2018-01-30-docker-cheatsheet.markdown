@@ -184,6 +184,26 @@ COPY --from=0 /app/main /app
 
 ```
 
+## docker swarm mode
+**Docker Swarm Mode has three new concepts:**
+- Node: A Node is an instance of the Docker Engine connected to the Swarm. Nodes are either managers or workers. Managers schedules which containers to run where. Workers execute the tasks. By default, Managers are also workers.
+- Services: A service is a high-level concept relating to a collection of tasks to be executed by workers. An example of a service is an HTTP Server running as a Docker Container on three nodes. This is a higher-level concept than containers. A service allows you to define how applications should be deployed at scale. By updating the service, Docker updates the container required in a managed way.
+- Load Balancing: Docker includes a load balancer to process requests across all containers in the service.
+
+
+**working with swarm:**
+- you can create swarm with `docker swarm init` - this will create swarm with one node - yours - which will be manager type.
+  - `swarm init` will create a token - more or less a command how to add nodoes to your swarm e.g. `docker swarm join --token SWMTKN-1-0o0ndc5gpwgwd0t0lt6l4g1usbk440jos0luw9mfqp5atl367d-b00rcna4a78unyl40vy90a2nf 172.17.0.59:2377`
+- if you have lost the token you can find it by: `docker -H {swarm init ip address}:2345 swarm join-token -q worker` e.g.: `token=$(docker -H 172.17.0.59:2345 swarm join-token -q worker)`
+- you can join the swarm with `docker swarm join {swarm init ip address}:2377 --token $token` (if $token exists from previous example) or just with command that you received after `docker swarm init` on base machine
+- you can see all joined nodes from your master machine with `docker node ls`
+- there is "better and improved" networking model in swarm - you can create it with: `docker network create -d overlay {network-name}`
+- you can create services - things that auto creates containers as needed. In example we create service named (our name) "http" in our "skynet" network with 2 instances (two containers in which swarm will auto-balance the load (in this case - http requests)) and bind internal port 80 to outside port 80. This service will be created from image "katacoda/docker-http-server": `docker service create -d --name http --network skynet --replicas 2 -p 80:80 katacoda/docker-http-server`
+- you can check the services running on cluster with `docker service ls`
+- you can check all tasks (in our case containers) in the service with `docker service ps {service name}`
+- you can get info what tasks (containers) does service run on specific machine: `docker node ps self`
+- you can easily scale up services with `docker service scale {service name}={number of instances needed}` e.g. in our case: `docker service scale http=5`
+
 ## references:
 - [interactive courses](https://katacoda.com/courses)
 - [Docker RUN vs CMD vs ENTRYPOINT](http://goinbigdata.com/docker-run-vs-cmd-vs-entrypoint/)
