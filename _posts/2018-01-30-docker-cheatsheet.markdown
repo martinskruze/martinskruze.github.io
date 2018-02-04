@@ -26,6 +26,7 @@ categories: cheatsheets
 - you can copy things to container with `docker cp {file_to_copy_from_outside} {friendly-name or container-id}:{folder_to_copy_to_inside_container}/` e.g. `docker cp config.conf dataContainer:/config/`
 
 ## look at things
+- general information `docker info`
 - search image libraries: `docker search {name}` from `hub.docker.com`
 - look at containers running in background: `docker ps`
 - look at all containers - running and not running `docker ps -a`
