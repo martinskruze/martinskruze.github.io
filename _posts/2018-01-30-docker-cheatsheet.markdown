@@ -1,10 +1,9 @@
 ---
 layout: post
-title:  docker for eight-year-olds
+title:  docker cheatsheet
 date:   2018-01-30 12:58:12 +0200
 categories: cheatsheets
 ---
-my try for Feynman's learning method: `https://medium.com/taking-note/learning-from-the-feynman-technique-5373014ad230`
 
 ## basics
 - `container` is virtual machine - it is isolated and can contain os or anything that it needs to run
@@ -40,6 +39,7 @@ my try for Feynman's learning method: `https://medium.com/taking-note/learning-f
 - you can see details of launched by docker-compose containers with `docker-compose ps`
 - you can see logs from launched by docker-compose containers with `docker-compose logs`
 - you can see containers stats (metrics) with `docker stats {friendly-name or container-id}` or just `docker stats`
+*except looking in swarm mode*
 
 
 ## create containers
