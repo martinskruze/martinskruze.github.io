@@ -107,6 +107,23 @@ alias dc-rspec='docker-compose run web rspec'
 ```
 - to ensure loading the updated `.bashrc` file you should do this: `. ~/.bashrc`
 
+## errors
+### error about unable to monitor direcories:
+- error:
+```bash
+web_1  | FATAL: Listen error: unable to monitor directories for changes.
+web_1  | Visit https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers for info on how to fix this.
+web_1  | => Booting Puma
+web_1  | => Rails 5.1.4 application starting in development
+web_1  | => Run `rails server -h` for more startup options
+web_1  | Exiting
+strongestcity_web_1 exited with code 1
+```
+- solution:
+```bash
+dc-web echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+```
+
 ## inspiration:
 1. [docker dcumentation for rails & postgres](https://docs.docker.com/compose/rails/)
 2. [RubySnack #60](https://www.youtube.com/watch?v=KH6pcHb6Wug)
