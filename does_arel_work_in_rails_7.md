@@ -44,6 +44,7 @@ WHERE "users"."username" = 'martins.kruze'
 LIMIT 1
 ```
 ![good news](https://c.tenor.com/YLIPXr2qJFsAAAAC/futurama-professor.gif)
+
 **IT IS THE SAME!**
 
 ### Finding articles
@@ -131,7 +132,9 @@ This is very promising, let's continue for something more complex and convoluted
 
 ## 4. UNION
 This covers subqueries also. Side Note - **you should make use of [ActiveRecordExtended](https://github.com/GeorgeKaraszi/ActiveRecordExtended) gem**, if you require union, CTE or something more complex, as your apps functionality) or just do some plain sql requests. These examples are more of an engineering exercise than a real use case, although… …you can make some really perverted APIs… **Just imagine the possibilities…**
+
 ![hahahaha](https://c.tenor.com/Xdz61gZI5eYAAAAC/super-science-friends-laughing.gif)
+
 ### Biggest Provocateur
 This is a bit of an abstract use case (but clients can be really weird with their requests - we are not here to judge, but to encourage), but let's imagine that we want to find out which of our users brings the most interaction. By creating commentable articles (most commented) or by commenting himself. In this case - let's imagine that we want to get some comments for users' articles or comments that the user created by himself (in any article. It can be realised in a lot of different ways - but let's try to use union (union not union all, because we want distinct comments). Warning! In _real life_, use Coment.arel_table as an alias for some subquery is a bit dubious at best (if you will add mutiple parts to it later), but rather some other alias or maybe select just ids and query Comment(id: subquery.arel) (it might become quite weird if you join multiple scopes). And if you need in rails 6 (and 7) there is UnionAll node too. So examplewise - this is bad, but for our needs, testing if/how union works in newest rails versions, it will suffice.
 #### Arel query:
