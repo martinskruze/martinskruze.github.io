@@ -1,4 +1,4 @@
-**TL;DR** Arel behaviour has not changed in examined examples - everything that worked in Rails 6 will work in Rails 7.
+**TL;DR** Arel behaviour has not changed in examined examples. This black box approach testing has shown that as I can see, everythinh that has worked in Rails 6 will work in Rails 7.
 
 # Does my old Arel queries work in Rails 7
 I will admit a little secret - I like using _Arel_ (A Relational Algebra) as a Rails developer. Currently _Arel_ has reached it's 10th version and is a member of Rails codebase.
