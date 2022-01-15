@@ -1,4 +1,4 @@
-**TL;DR** Arel behaviour has not changed in examined examples. This black box approach testing has shown that as I can see, everythinh that has worked in Rails 6 will work in Rails 7.
+**TL;DR** Arel behaviour has not changed in examined examples. This black box testing approach has given me confidence that everything that has worked in Rails 6 will work in Rails 7.
 
 # Does my old Arel queries work in Rails 7
 I will admit a little secret - I like using _Arel_ (A Relational Algebra) as a Rails developer. Currently _Arel_ has reached it's 10th version and is a member of Rails codebase.
@@ -13,7 +13,7 @@ We will use simple data structure: we have table users, which has id and usernam
 ![Database structure](/files/does_arel_work_in_rails_7/database_structure.png)
 
 All the tables have their own appropriate models: User, Article and Comment.
-I added some data, you can see in the seed file. And there is tests covering it.
+I added some data, you can see in the seed file. And there are tests covering it.
 
 ## Where I can play with code
 
