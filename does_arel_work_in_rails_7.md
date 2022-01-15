@@ -1,3 +1,5 @@
+**Date:** Jan 15th 2022
+
 **TL;DR** Arel behaviour has not changed in examined examples. This black box testing approach has given me confidence that everything that has worked in Rails 6 will work in Rails 7.
 
 # Does my old Arel queries work in Rails 7
