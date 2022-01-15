@@ -1,30 +1,34 @@
 **TL;DR** Arel behaviour has not changed in examined examples - everything that worked in Rails 6 will work in Rails 7.
 
 # Does my old Arel queries work in Rails 7
-I will admit a little secret - I like using _Arel_ (A Relational Algebra) as a Rails developer. Currently (November 2021 (this have taken a while to write)) it seems that _Arel_ has reached it's 10th version and is a member of Rails codebase.
-There have been a lot of rumors floating around about breaking changes for this private Rails API. How true are those rumors and will our favorite _Arel_ requests still work in future - that is a question that I wanted to find some answers to.
+I will admit a little secret - I like using _Arel_ (A Relational Algebra) as a Rails developer. Currently _Arel_ has reached it's 10th version and is a member of Rails codebase.
+There have been a lot of rumors floating around about breaking changes for this _private_ Rails API. How true are those rumors and will our favorite _Arel_ requests still work in future - that is a question that I wanted to find some answers to.
 
 Small disclaimer: do not use _Arel_ if you are not prepared to follow development of it and solve issues when upgrading Rails. It is a powerful tool, but as one web swinging superhero's uncle once said: _with great power comes great responsibilities_.
 
+The method for madness below - just two applications connected to the same database and some queries inspired by my past applications. Although dates in examples are 2021-11, this still holds true to newly released rails 7.0.1 (as of January 2022).
+
+We will use simple data structure: we have table users, which has id and username, articles which has id, author_id (the same user), subject and body, and comments with id, content, article_id, parent_id (other comments if nested) and commenter_id (some record from user) + created_at and updated_at timestamps for each of the tables. Please understand - the data structure is just for illustration and not for some serious work. Please do not judge me on this.
+
 ![Database structure](/files/does_arel_work_in_rails_7/database_structure.png)
-
-The method for madness below - just two applications connected to the same database and some queries inspired by my past applications.
-
-This application has simple data structure: we have table users, which has id and username, articles which has id, author_id (the same user), subject and body, and comments with id, content, article_id, parent_id (other comments if nested) and commenter_id (some record from user) + created_at and updated_at timestamps for each of the tables. Please understand - the data structure is just for illustration and not for some serious work. Please do not judge me on this.
 
 All the tables have their own appropriate models: User, Article and Comment.
 I added some data, you can see in the seed file. And there is tests covering it.
 
 ## Where I can play with code
 
-The github repo [dis-button/arel_for_rails](https://github.com/dis-button/arel_for_rails) contains all the code used. Just docker-compose up and create, migrate and seed db and you are set to go. Only weird thing - that logic specific code is in the “general” folder which parts are mounted as volumes in docker (it might sound daunting, but definitely are not).
-All of the code is divided into service objects. For example, the final version of Simple Requests Finding user is in general/app/services/simple_requests/finding_user.rb in each of the rails app folders.
-If you want to use code mentioned in this or parts of it - go for it, but mention would be appreciated!
+The github repo [dis-button/arel_for_rails](https://github.com/dis-button/arel_for_rails) contains all the code used. Just docker-compose up and create, migrate and seed db and you are set to go.
+Only weird thing - the common application code (models, service objects and specs) is in the “/general/...” folder, which contains parts to be mounted as volumes in docker (it might sound daunting, but basically - general folder - code - rails application folders - just to execute the code).
+
+All of the code is divided into service objects. For example, the final version of Simple Requests Finding user is in general/app/services/simple_requests/finding_user.rb.
+
+If you want to use code mentioned in this or parts of it - go for it, if you discuss it somewhere some mention would be appreciated!
+
 For everything there are specs, if you want to just make changes and run - more info in README of that git repo.
 
 ## 1. SIMPLE REQUESTS
 ### Finding user
-The simplest request that you can ash - when value is one of the expected. For example: let's find a user with the username of “martins.kruze”. (I know that you can do the thing with rails ActiveRecord query User.find_by(username: “martins.kruze”), but where is the fun in that?
+The simplest request that you can ask - let's find a user with the username of “martins.kruze”. (I know that you can do the thing with rails ActiveRecord query User.find_by(username: “martins.kruze”), but where is the fun in that?
 #### Arel query
 ```ruby
 Application::User.find_by(Application::User.arel_table[:username].eq('martins.kruze'))
@@ -136,7 +140,14 @@ This covers subqueries also. Side Note - **you should make use of [ActiveRecordE
 ![hahahaha](https://c.tenor.com/Xdz61gZI5eYAAAAC/super-science-friends-laughing.gif)
 
 ### Biggest Provocateur
-This is a bit of an abstract use case (but clients can be really weird with their requests - we are not here to judge, but to encourage), but let's imagine that we want to find out which of our users brings the most interaction. By creating commentable articles (most commented) or by commenting himself. In this case - let's imagine that we want to get some comments for users' articles or comments that the user created by himself (in any article. It can be realised in a lot of different ways - but let's try to use union (union not union all, because we want distinct comments). Warning! In _real life_, use Coment.arel_table as an alias for some subquery is a bit dubious at best (if you will add mutiple parts to it later), but rather some other alias or maybe select just ids and query Comment(id: subquery.arel) (it might become quite weird if you join multiple scopes). And if you need in rails 6 (and 7) there is UnionAll node too. So examplewise - this is bad, but for our needs, testing if/how union works in newest rails versions, it will suffice.
+This is a bit of an abstract use case (sometimes clients can be really weird with their requests - we are not here to judge, but to encourage). Let's imagine that we want to find out which of our users brings the most interaction. By creating commentable articles (most commented) or by commenting himself. 
+
+In this case - let's imagine that we want to get some comments for users' articles or comments that the user created by himself (in any article). This functionality can be realised in a lot of different ways - but let's try to use union (union not union all, because we want distinct comments).
+
+Warning (a bit of offtopic)! In _real life_, if you want to use something similar, use Coment.arel_table as an alias for some subquery only if you really return only comments, otherwise it is a bit dubious at best. Rather some other alias or maybe select just ids and query Comment(id: subquery.arel).
+
+We are using Union node here, but if you need in rails 6 (and 7) there is UnionAll node too.
+
 #### Arel query:
 ```ruby
 users_comments = Comment.
@@ -181,7 +192,9 @@ FROM (
 Drumroll… …it works! Good! So I have a couple more complex ideas… …have you heard about CTE?
 
 ## 5. Common Table Expressions
-Common table expressions ('with as ()' sql statements) are useful tools in every complex SQL statement. These can get complicated, even with pg recursion, so I have two examples.  Side Note - **you should make use of [ActiveRecordExtended](https://github.com/GeorgeKaraszi/ActiveRecordExtended) gem**, if you require union, CTE or something more complex, as your apps functionality). These examples are more of an engineering exercise than a real use case… …but I am not judging, if there is a will, there is a way.
+Common table expressions ('with as ()' sql statements) are useful tools in every complex SQL statement. These can get complicated, even with pg recursion, so I have two examples.  Side Note - **you should make use of [ActiveRecordExtended](https://github.com/GeorgeKaraszi/ActiveRecordExtended) gem**, if you require union, CTE or something more complex, as your apps functionality).
+
+These examples are more of an engineering exercise than a real use case, but if there is a will, there is a way, so you do you.
 ### Order articles
 In this example, let's try to order articles by longest comment. This is not the most efficient way to order articles by longest comment, but it is just to exemplify CTE usage. This will show usage of window function and custom joining on newly created attributes. All our found articles must have comments for simplicity's sake. We want to display not only articles, but also how long is the longest comment.
 #### Rails 6 arel query with rails 6 sql
@@ -290,7 +303,9 @@ Application::Article.find_by_sql(sql_statement)
 By the Merlin's beard… IT WORKS… Ok, I have a last idea - lets mix multiple CTEs and add postgres recursion… Maybe that will kill it.
 
 ### Article with longest comment chain
-To have little sql recursion fun, we added comment_id to the comments table. Let's imagine that we need to have the articles and have an “engagement score” (_buzzwordy…_) of it, which is calculated by multiplying the comment thread count by the maximum comment thread size of the longest thread for this article. There are multiple ways of doing this, but let's challenge ourselves (and Arel) with some fun with postgre recursion. This is not the perfect and most speedy solution, I just wanted to explore the generation of query with multiple CTE statements and recursion.
+To have little sql recursion fun, we added comment_id to the comments table. Let's imagine that we need to have the articles and have an “engagement score” (article_score in final sql), which is calculated by multiplying the comment thread count by the maximum comment thread size of the longest thread for this article. Articles need to be ordered by this.
+
+There are multiple ways of doing this, but let's challenge ourselves (and _Arel_) with some fun with postgre recursion. This is not the perfect and most speedy solution, I just wanted to explore the generation of query with multiple CTE statements and recursion.
 #### Rails 6 arel query with rails 6 sql
 ```ruby
 # lets define new arel tables
@@ -508,4 +523,3 @@ OK… Nothing will change then, maybe next time.
 
 ## CONCLUSION
 As far as I can see - Arel in Rails 7 works with the same requests as Rails 6, but I have a dockerised framework for comparison purposes… What should I try next?
-
