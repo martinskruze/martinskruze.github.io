@@ -12,7 +12,7 @@ We will use simple data structure: we have table users, which has id and usernam
 
 ![Database structure](/files/does_arel_work_in_rails_7/database_structure.png)
 
-All the tables have their own appropriate models: User, Article and Comment.
+All the tables have their own appropriate models: Application::User, Application::Article and Application::Comment (I added Application namespace in order to make them in different, mountable folder).
 I added some data, you can see in the seed file. And there are tests covering it.
 
 ## Where I can play with code
@@ -28,7 +28,7 @@ For everything there are specs, if you want to just make changes and run - more 
 
 ## 1. SIMPLE REQUESTS
 ### Finding user
-The simplest request that you can ask - let's find a user with the username of “martins.kruze”. (I know that you can do the thing with rails ActiveRecord query User.find_by(username: “martins.kruze”), but where is the fun in that?
+The simplest request that you can ask - let's find a user with the username of “martins.kruze”. (I know that you can do the thing with rails ActiveRecord query Application::User.find_by(username: “martins.kruze”), but where is the fun in that?
 #### Arel query
 ```ruby
 Application::User.find_by(Application::User.arel_table[:username].eq('martins.kruze'))
@@ -80,12 +80,12 @@ Sweet juices of pinecones! Again - the same thing - it works!
 Lets order something, Ordering articles by their body length in descending order seems like a nice challenge. It would make use of some postges function (length()). For displaying (not necessary for ordering itself, we can add an extra attribute to returned collections articles 'body_length’ which would be the same that we use for ordering.
 #### Arel query
 ```ruby
-Article.
+Application::Article.
   select(
     Arel.star,
-    Arel::Nodes::NamedFunction.new('length', [Article.arel_table[:body]]).as('body_length')
+    Arel::Nodes::NamedFunction.new('length', [Application::Article.arel_table[:body]]).as('body_length')
   ).
-  order(Arel::Nodes::NamedFunction.new('length', [Article.arel_table[:body]]).desc)
+  order(Arel::Nodes::NamedFunction.new('length', [Application::Article.arel_table[:body]]).desc)
 ```
 
 #### Rails 6 generated SQL
@@ -116,9 +116,9 @@ It continues to play nice - everything is the same
 Lets find Articles where the subject has the name arel in it or is created more than 24 hours ago (DateTime.current is '2021-11-28 16:50:38.302849').
 #### Arel query
 ```ruby
-Article.where(
-  Article.arel_table[:subject].matches('%arel%').
-    or(Article.arel_table[:created_at].lteq(DateTime.current - 1.day))
+Application::Article.where(
+  Application::Article.arel_table[:subject].matches('%arel%').
+    or(Application::Article.arel_table[:created_at].lteq(DateTime.current - 1.day))
 )
 ```
 #### Rails 6 generated SQL
@@ -150,22 +150,22 @@ We are using Union node here, but if you need in rails 6 (and 7) there is UnionA
 
 #### Arel query:
 ```ruby
-users_comments = Comment.
+users_comments = Application::Comment.
   joins(:commenter).
-  where(User.arel_table[:username].eq('martins.kruze')).
+  where(Application::User.arel_table[:username].eq('martins.kruze')).
   arel
 
-users_articles_comments = Comment.
+users_articles_comments = Application::Comment.
   joins(article: :author).
-  where(User.arel_table[:username].eq('martins.kruze')).
+  where(Application::User.arel_table[:username].eq('martins.kruze')).
   arel
 
 unionized_results = Arel::Nodes::As.new(
   Arel::Nodes::Union.new(users_comments, users_articles_comments),
-  Comment.arel_table
+  Application::Comment.arel_table
 )
 
-Comment.from(unionized_results)
+Application::Comment.from(unionized_results)
 ```
 #### Rails 6 generated SQL
 ```sql
